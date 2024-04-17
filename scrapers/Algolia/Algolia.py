@@ -59,15 +59,19 @@ MOVIE_SITES = {
     "devilsfilm": "https://www.devilsfilm.com/en/dvd",
     "devilstgirls": "https://www.devilstgirls.com/en/dvd",
     "diabolic": "https://www.diabolic.com/en/movie",
+    "falconstudios": "https://www.falconstudios.com/en/movie",
     "evilangel": "https://www.evilangel.com/en/movie",
     "genderx": "https://www.genderxfilms.com/en/movie",
     "girlfriendsfilms": "https://www.girlfriendsfilms.com/en/movie",
     "lewood": "https://www.lewood.com/en/movie",
+    "hothouse": "https://www.hothouse.com/en/movie",
     "outofthefamily": "https://www.outofthefamily.com/en/dvd",
     "peternorth": "https://www.peternorth.com/en/dvd",
     "tsfactor": "https://www.tsfactor.com/en/movie/",
     "wicked": "https://www.wicked.com/en/movie",
-    "zerotolerancefilms": "https://www.zerotolerancefilms.com/en/movie"
+    "zerotolerancefilms": "https://www.zerotolerancefilms.com/en/movie",
+    "3rddegreefilms": "https://www.3rddegreefilms.com/en/movie",
+    "roccosiffredi": "https://www.roccosiffredi.com/en/dvd",
 }
 
 # a dict of serie (`serie_name` from the API) which should set the value
@@ -102,6 +106,10 @@ SITES_USING_OVERRIDE_AS_STUDIO_FOR_SCENE = {
     "Transgressivexxx": "TransgressiveXXX",
     "Hot House": "Hot House Entertainment",
     "HotHouse.com": "Hot House Entertainment",
+    "1000facials": "1000 Facials",
+    "Immorallive": "Immoral Live",
+    "Mommyblowsbest": "Mommy Blows Best",
+    "Onlyteenblowjobs": "Only Teen Blowjobs"
 }
 
 # a list of sites (`sitename_pretty` from the API) which should pick out the
@@ -119,6 +127,7 @@ SITES_USING_SITENAME_AS_STUDIO_FOR_SCENE = [
     "Out of the Family",
     "Rocco Siffredi",
     "Squirtalicious",
+    "3rd Degree Films",
 ]
 
 # a list of sites (`sitename_pretty` from the API) which should pick out the

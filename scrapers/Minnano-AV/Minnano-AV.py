@@ -48,16 +48,17 @@ REGEXES = {
     "alias": r"(?P<kanji>[^\x29\uFF09]+?)(?P<studio>[\x28\uFF08\u3010][^\x29\uFF09\u3011]+(?:[\x29\uFF09\u3011]))?\s[\x28\uFF08](?P<katakana>\w+)?\s+/\s(?P<romanized>[a-z-A-Z ]+)?[\x29\uFF09]",
     "id": r"\d+",
     "birthdate": r"[0-9-]+",
-    "career": (r"(?P<start>\d+)年?(?:\d+月)? ?(?:\d+)?日?[-~]? ?(?:(?P<end>\d+)?)?年?"),
+    # https://regex101.com/r/FSqv0L/1
+    "career": (r"(?P<start>\d{4})年?(?:\d+月)? ?(?:\d+)?日?[-~]? ?(?:(?P<end>\d+)?)?年?"),
     "measurements": (
         r"(?<=T)(?P<height>\d+)? / B(?P<bust>\d+)\([^=]+=(?P<cup>\w+)\) / W(?P<waist>\d+) / H(?P<hip>\d+)"
     ),
-    "url": r"http://www.minnano-av.com/actress\d+.html",
+    "url": r"https://www.minnano-av.com/actress\d+.html",
 }
 
 FORMATS = {
-    "image": "http://www.minnano-av.com{IMAGE_URL_FRAGMENT}",
-    "url": "http://www.minnano-av.com/actress{PERFORMER_ID}.html",
+    "image": "https://www.minnano-av.com{IMAGE_URL_FRAGMENT}",
+    "url": "https://www.minnano-av.com/actress{PERFORMER_ID}.html",
 }
 
 
@@ -309,7 +310,7 @@ def performer_by_url(url):
 
 
 def performer_by_name(name: str, retry=True) -> None:
-    queryURL = f"http://www.minnano-av.com/search_result.php?search_scope=actress&search_word={name}"
+    queryURL = f"https://www.minnano-av.com/search_result.php?search_scope=actress&search_word={name}"
 
     result = requests.get(queryURL)
     tree = etree.HTML(result.text)
