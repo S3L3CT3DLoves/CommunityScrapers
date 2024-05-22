@@ -49,10 +49,11 @@ def maybe(
     values: Iterable[str], f: Callable[[str], (T | None)] = lambda x: x
 ) -> T | None:
     """
-    Returns the first value in values that is not "No data" after applying f to it
+    Returns the first value in values that is not a predefined "empty value" after applying f to it
     """
+    empty_values = ["No Data", "No Director", "No known aliases", "None"]
     return next(
-        (f(x) for x in values if not re.search(r"(?i)no data|no director|none", x)),
+        (f(x) for x in values if not re.search("|".join(empty_values), x, re.I)),
         None,
     )
 
@@ -481,6 +482,7 @@ def main():
     result = {}
     if args.operation == "performer":
         result = performer_from_tree(scraped)
+        result["url"] = url
     elif args.operation == "movie":
         result = movie_from_tree(scraped)
     elif args.operation == "scene":

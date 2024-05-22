@@ -5,6 +5,7 @@ import os
 import re
 import sqlite3
 import sys
+import base64
 from configparser import ConfigParser, NoSectionError
 from urllib.parse import urlparse
 
@@ -56,10 +57,12 @@ MAIN_CHANNELS_AS_STUDIO_FOR_SCENE = [
 # a dict with sites having movie sections
 # used when populating movie urls from the scene scraper
 MOVIE_SITES = {
+    "biphoria.com": "https://www.biphoria.com/en/movie",
     "devilsfilm": "https://www.devilsfilm.com/en/dvd",
     "devilstgirls": "https://www.devilstgirls.com/en/dvd",
     "diabolic": "https://www.diabolic.com/en/movie",
     "falconstudios": "https://www.falconstudios.com/en/movie",
+    "ragingstallion": "https://www.ragingstallion.com/en/movie",    
     "evilangel": "https://www.evilangel.com/en/movie",
     "genderx": "https://www.genderxfilms.com/en/movie",
     "girlfriendsfilms": "https://www.girlfriendsfilms.com/en/movie",
@@ -71,6 +74,7 @@ MOVIE_SITES = {
     "wicked": "https://www.wicked.com/en/movie",
     "zerotolerancefilms": "https://www.zerotolerancefilms.com/en/movie",
     "3rddegreefilms": "https://www.3rddegreefilms.com/en/movie",
+    "lethalhardcore": "https://www.lethalhardcore.com/en/movies",
     "roccosiffredi": "https://www.roccosiffredi.com/en/dvd",
 }
 
@@ -101,6 +105,9 @@ SITES_USING_OVERRIDE_AS_STUDIO_FOR_SCENE = {
     "Devils Gangbangs": "Devil's Gangbangs",
     "Devilstgirls": "Devil's Tgirls",
     "Dpfanatics": "DP Fanatics",
+    "FalconStudios.com": "Falcon Studios",
+    "Gloryholesecrets": "Gloryhole Secrets",
+    "RagingStallion.com": "Raging Stallion",    
     "Janedoe": "Jane Doe Pictures",
     "ModernDaySins": "Modern-Day Sins",
     "Transgressivexxx": "TransgressiveXXX",
@@ -119,8 +126,12 @@ SITES_USING_OVERRIDE_AS_STUDIO_FOR_SCENE = {
 SITES_USING_SITENAME_AS_STUDIO_FOR_SCENE = [
     "ChaosMen",
     "Devil's Film",
+    "Evil Angel",
+    "FalconStudios.com",
+    "RagingStallion.com",    
     "GenderXFilms",
     "Give Me Teens",
+    "Gloryholesecrets",
     "Hairy Undies",
     "Lesbian Factor",
     "Oopsie",
@@ -128,6 +139,7 @@ SITES_USING_SITENAME_AS_STUDIO_FOR_SCENE = [
     "Rocco Siffredi",
     "Squirtalicious",
     "3rd Degree Films",
+    "Lethalhardcore",
 ]
 
 # a list of sites (`sitename_pretty` from the API) which should pick out the
@@ -141,6 +153,12 @@ SITES_USING_NETWORK_AS_STUDIO_FOR_SCENE = [
     "Officemsconduct",  # network_name: Transfixed
     "Sabiendemonia",    # network_name: Sabien DeMonia
     "Upclosex"          # network_name: UpCloseX
+]
+
+# Some sites lists scenes from different subnetworks and uses mainChannel as studio
+# Good example is asgmax.com.
+SITES_SEGMENT_USING_MAIN_CHANNEL_AS_SCENE_STUDIO = [
+    "asgmax",
 ]
 
 # a list of networks (`network_name` from the API) which should pick out the
@@ -582,10 +600,16 @@ def parse_movie_json(movie_json: dict) -> dict:
         date_by_studio = studios_movie_dates[studio_name]
     scrape["date"] = movie_json[0].get(date_by_studio)
 
-    scrape[
-        "front_image"] = f"https://transform.gammacdn.com/movies{movie[0].get('cover_path')}_front_400x625.jpg?width=450&height=636"
-    scrape[
-        "back_image"] = f"https://transform.gammacdn.com/movies{movie[0].get('cover_path')}_back_400x625.jpg?width=450&height=636"
+    front_img_req = requests.get(f"https://transform.gammacdn.com/movies{movie[0].get('cover_path')}_front_400x625.jpg?width=450&height=636")
+    if front_img_req.ok:
+        scrape["front_image"] = front_img_req.url
+
+    back_img_req = requests.get(f"https://transform.gammacdn.com/movies{movie[0].get('cover_path')}_back_400x625.jpg?width=450&height=636")
+    if back_img_req.ok:
+        if base64.b64encode(front_img_req.content) == base64.b64encode(back_img_req.content):
+            log.debug("back_image same as front_image")
+        else:
+            scrape["back_image"] = back_img_req.url
 
     directors = []
     if movie_json[0].get('directors') is not None:
@@ -603,6 +627,9 @@ def determine_studio_name_from_json(some_json):
     - movie
     '''
     studio_name = None
+    if some_json.get('segment') in SITES_SEGMENT_USING_MAIN_CHANNEL_AS_SCENE_STUDIO:
+        studio_name = some_json.get('mainChannel', {}).get('name', '')
+        return studio_name
     if some_json.get('sitename_pretty'):
         if some_json.get('sitename_pretty') in SITES_USING_OVERRIDE_AS_STUDIO_FOR_SCENE:
             studio_name = \
@@ -686,6 +713,13 @@ def parse_scene_json(scene_json, url=None):
         tag_name = " ".join(tag.capitalize() for tag in tag_name.split(" "))
         if tag_name:
             list_tag.append({"name": tag.get('name')})
+            
+    # Append content_tags to list_tag
+    for tag in scene_json.get('content_tags', []):
+        if isinstance(tag, str):
+            tag = tag.capitalize()
+            list_tag.append({"name": tag})
+
     if FIXED_TAG:
         list_tag.append({"name": FIXED_TAG})
     scrape['tags'] = list_tag
@@ -791,6 +825,13 @@ def parse_gallery_json(gallery_json: dict, url: str = None) -> dict:
         tag_name = " ".join(tag.capitalize() for tag in tag_name.split(" "))
         if tag_name:
             list_tag.append({"name": tag.get('name')})
+    # Append content_tags to list_tag
+    for tag in gallery_json.get('content_tags', []):
+        if isinstance(tag, str):
+            tag = tag.capitalize()
+            list_tag.append({"name": tag})
+        else:
+            continue
     if FIXED_TAG:
         list_tag.append({"name": FIXED_TAG})
     scrape['tags'] = list_tag
