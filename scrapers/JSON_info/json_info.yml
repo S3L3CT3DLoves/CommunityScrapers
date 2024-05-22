@@ -1,25 +1,10 @@
-name: Torrent
+name: JSON_Info
 # requires: py_common
 
 sceneByFragment:
     action: script
     script:
       - python3
-      - torrent.py
-      - query
-  
-sceneByName:
-  action: script
-  script:
-    - python3
-    - torrent.py
-    - search
-
-sceneByQueryFragment:
-  action: script
-  script:
-    - python3
-    - torrent.py
-    - fragment
-
-# Last Updated December 16, 2022
+      - json_info.py
+      - fragment
+# Last Updated December, 10 2023
