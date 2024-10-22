@@ -65,6 +65,7 @@ def mapValues(scene_data):
         output['image'] = scene_data['image']
         output['tags'] = list(map(lambda x: {"Name":x}, scene_data['tags']))
         output['studio'] = {"Name" : scene_data['studio'] }
+        output['details'] = scene_date['details']
     
     # Schema v1.1 introduces a field for performers
     if formatVersion > 1.1:
